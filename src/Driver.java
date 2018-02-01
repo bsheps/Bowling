@@ -16,7 +16,7 @@ public class Driver {
 			//so we can see what's going on in the game
 			System.out.println("Frame : " + i + ", FirstBall: "+firstBall+", SecondBall: " + secondBall+ "\nTotal so far: " + s1.getScore() + "\n");
 		}
-		// try one last hand, should fail...and reach endOfGame() method
+		// try one last frame, should fail...and reach endOfGame() method
 		int firstBall = rand.nextInt(11);
 		int secondBall = rand.nextInt(11-firstBall);
 		s1.nextFrame(firstBall, secondBall);
