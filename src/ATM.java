@@ -28,53 +28,48 @@ public class ATM {
 		Scanner input = new Scanner(System.in);
 		ATMprinter p = new ATMprinter();
 		String entry= "";
+		CardReader cardReader = new CardReader();
+		cashDispenser dispenser = new cashDispenser();
 
 		while (!entry.equals("exit")) {	// 
 			try {	
-				p.receiptPrint("message here", true);
-				p.receiptPrint("message here", false);
-				System.out.println("Welcome to the ATM.\nTo begin, please enter account number: "); 
-				entry = input.nextLine();
-				if(entry.equals("exit")) {
-					p.shutDownPrinter();
-					break;
-				}
-				int accountNum =Integer.parseInt(entry);					
-				System.out.print("Please enter your pin number: ");
+				System.out.println("Welcome to the ATM.");
+				int accountNum =Integer.parseInt(cardReader.cardRead());
+				p.printThis("CARDREAD "+ Integer.toString(accountNum), true);
+				p.printThis("ENTER PIN", false);
 				int pinEntered =  Integer.parseInt(input.nextLine());
-				boolean custExists = Bank.validate(accountNum, pinEntered);
-				if (!custExists) 
-					System.out.println("Invalid account number or pin."); 
-				else {
+				if (Bank.validate(accountNum, pinEntered)) {
 					Account customer = Bank.getAcc(accountNum);					
-						while (!entry.equals("0")) {
-							System.out.println("0=Quit, 1=Check Balance, 2=Deposit, 3=Withdrawl");
+						while (!entry.equals("CANCEL")) {
+							p.printThis(("Choose transaction (W - withdraw, CB - check balance, CANCEL - return card"), false);
 							entry = input.nextLine();
-							if (entry.equals("0")) {
-								System.out.println("Goodbye.");
+							p.printThis("BUTTON " + entry, true);
+							switch(entry) {
+								case	"CANCEL" :
+									p.printThis("ENJECT CARD", false);
+									break;
+
+								case 	"CB" :
+									p.printThis(Double.toString(customer.getBalance()), true);
+									break;
+								case	"W"	:
+									p.printThis("Amount?", false);
+									String withdraw = input.nextLine();
+									if(customer.withdrawl(Double.parseDouble(withdraw)))
+										if(!dispenser.dispense(Integer.parseInt(withdraw))){	// if atm is out of money, redeposit the amount back to the account
+											customer.deposit(Double.parseDouble(withdraw));	
+											p.printThis("ATM out of cash", true);
+										}
+										else 
+											p.printThis("NEW BALANCE: "+ Double.toString(customer.getBalance()), true);
+							default:
 								break;
-							} 
-							else if (entry.equals("1"))
-								System.out.println("Your current balance is: $" + customer.getBalance()); 
-							else if (entry.equals("2")) {
-								System.out.println("Enter how much would you like to deposit: $");
-								entry = input.nextLine();
-								if(customer.deposit(Double.parseDouble(entry)))
-									System.out.println("Your new balance is: $" + customer.getBalance());
-								else 
-									System.out.println("Invalid deposit amount.");
-							} 
-							else if (entry.equals("3")) {
-								System.out.println("Enter how much would you like to withdrawl: $");
-								entry = input.nextLine();
-								if(customer.withdrawl(Double.parseDouble(entry)))
-									System.out.println("Your new balance is: $" + customer.getBalance());									
-								else 
-									System.out.println("Invalid withdraw amount.");
-							} 
-							else 
-								System.out.println("Invalid entry, please try again.");							
-						}				
+							}
+							
+						}
+				}
+				else {
+					System.out.println("Invalid account number or pin."); 				
 				}
 			}
 			catch(NumberFormatException e) { 
